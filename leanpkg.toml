@@ -1,0 +1,8 @@
+[package]
+name = "BSD-conjecture"
+version = "0.1"
+lean_version = "leanprover-community/lean:3.30.0"
+path = "src"
+
+[dependencies]
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "6af5fbd22fb7c02a8c165d90e257d860c1b42715"}
