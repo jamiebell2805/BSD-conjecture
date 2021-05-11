@@ -95,10 +95,48 @@ instance : add_comm_group (points E) :=
   end,
 }
 
-
-theorem fg : ∃ (S : set (points E)), add_subgroup.closure S = ⊤ ∧ S.finite := begin
+theorem fg : add_group.fg (points E) := begin
   sorry,
 end
+
+def torsion_points (E : elliptic_curve) : (set (points E)) := 
+{P | ∃ (n : ℤ), (n • P = 0)}
+
+def torsion_subgroup (E : elliptic_curve) : add_subgroup (points E) :=
+{ carrier := (torsion_points E),
+  zero_mem' := begin
+    unfold torsion_points,
+    rw set.mem_set_of_eq,
+    use 0,
+    simp,
+  end,
+  add_mem' := begin
+    unfold torsion_points at *,
+    intros a b ha hb,
+    cases ha with na hna,
+    cases hb with nb hnb,
+    rw set.mem_set_of_eq,
+    use na*nb,
+    rw smul_add,
+    rw mul_comm,
+    rw mul_smul,
+    rw hna,
+    rw mul_comm,
+    rw mul_smul,
+    rw hnb,
+    simp,
+  end,
+  neg_mem' := begin
+    unfold torsion_points at *,
+    intros x hx,
+    cases hx with n hn,
+    rw set.mem_set_of_eq,
+    use n,
+    rw smul_neg,
+    rw hn,
+    simp,
+  end,
+}
 
 
 
