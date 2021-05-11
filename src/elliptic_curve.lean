@@ -1,4 +1,8 @@
 import tactic
+import group_theory.subgroup
+import group_theory.finiteness
+
+
 
 def disc (a b : ℚ) : ℚ :=
 -16*(4*a^3+27*b^2)
@@ -62,10 +66,39 @@ if hd : x1 = x2 then (if y1 = y2 then double E (some P) else 0) else
   let x3dd := sd^2-(x1+x2)*d*d in
   let y3ddd := sd*x3dd+td*d*d in
   let x₃ := x3dd/d^2 in
-  let y₃ := -y3ddd/d^3 in
-  some ⟨⟨x₃, y₃⟩, begin
+  let y₃' := -y3ddd/d^3 in
+  some ⟨⟨x₃, y₃'⟩, begin
     sorry,
   end⟩
+
+instance : has_neg (points E) := ⟨E.neg⟩ 
+instance : has_add (points E) := ⟨E.add⟩
+
+instance : add_comm_group (points E) :=
+{ zero := 0,
+  add := has_add.add,
+  neg := has_neg.neg,
+  zero_add := begin
+    sorry,
+  end,
+  add_zero := begin
+    sorry,
+  end,
+  add_assoc := begin
+    sorry,
+  end,
+  add_left_neg := begin
+    sorry,
+  end,
+  add_comm := begin
+    sorry,
+  end,
+}
+
+
+theorem fg : ∃ (S : set (points E)), add_subgroup.closure S = ⊤ ∧ S.finite := begin
+  sorry,
+end
 
 
 
