@@ -1,3 +1,5 @@
+
+
 import tactic
 import group_theory.subgroup
 import group_theory.finiteness
@@ -6,6 +8,8 @@ import data.fintype.card
 import data.set.finite
 import init.data.nat.lemmas
 
+
+local attribute [semireducible] with_zero
 def disc (a b : ℚ) : ℚ :=
 -16*(4*a^3+27*b^2)
 
@@ -36,7 +40,7 @@ def neg_finite : finite_points E → finite_points E
 
 def neg : points E → points E
 | 0 := 0
-| (some P) := (some neg_finite P)
+| (some P) := (some (neg_finite E P))
   --line above doesn't seem to work
 
 def double : points E → points E
@@ -141,10 +145,11 @@ def torsion_subgroup (E : elliptic_curve) : add_subgroup (points E) :=
 }
 
 def torsion_free (E : elliptic_curve) := 
-  add_group (quotient_add_group.quotient (torsion_subgroup E))
+  (quotient_add_group.quotient (torsion_subgroup E))
 
 instance: add_comm_group (torsion_free E) := begin
-  sorry,
+  unfold torsion_free,
+  apply_instance,
 end
 
 theorem torsion_free_fg : add_group.fg (torsion_free E) := begin
@@ -174,8 +179,8 @@ theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) := begin
   exact ⟨hfinite, hclosure⟩},
   {refl},
 end
-
-def rank (E : elliptic_curve) : ℕ :=
+open_locale classical
+noncomputable def rank (E : elliptic_curve) : ℕ :=
   nat.find (sizes_non_empty E)
   
 
