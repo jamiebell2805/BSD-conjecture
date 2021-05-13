@@ -1,8 +1,10 @@
 import tactic
 import group_theory.subgroup
 import group_theory.finiteness
-
-
+import group_theory.quotient_group
+import data.fintype.card
+import data.set.finite
+import init.data.nat.lemmas
 
 def disc (a b : ℚ) : ℚ :=
 -16*(4*a^3+27*b^2)
@@ -138,8 +140,44 @@ def torsion_subgroup (E : elliptic_curve) : add_subgroup (points E) :=
   end,
 }
 
+def torsion_free (E : elliptic_curve) := 
+  add_group (quotient_add_group.quotient (torsion_subgroup E))
+
+instance: add_comm_group (torsion_free E) := begin
+  sorry,
+end
+
+theorem torsion_free_fg : add_group.fg (torsion_free E) := begin
+  sorry,
+end
+
+def generators (E : elliptic_curve) := 
+  {S : set (torsion_free E) | (set.finite S) ∧ (add_subgroup.closure S = ⊤)}
 
 
+
+def sizes (E : elliptic_curve) : (set ℕ) :=
+  {n : ℕ | ∃ (S : generators E), (fintype.card (fintype S)) = n}
+
+theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) := begin
+  unfold sizes,
+  have h : ∃ (S : set (torsion_free E)), (add_subgroup.closure S = ⊤) ∧ (S.finite),
+  {rw ← add_group.fg_iff,
+  exact torsion_free_fg E},
+  cases h with S hS,
+  cases hS with hclosure hfinite,
+  use fintype.card (fintype S),
+  rw set.mem_set_of_eq,
+  use S,
+  {unfold generators,
+  rw set.mem_set_of_eq,
+  exact ⟨hfinite, hclosure⟩},
+  {refl},
+end
+
+def rank (E : elliptic_curve) : ℕ :=
+  nat.find (sizes_non_empty E)
+  
 
 
 
