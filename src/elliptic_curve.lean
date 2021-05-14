@@ -1,5 +1,3 @@
-
-
 import tactic
 import group_theory.subgroup
 import group_theory.finiteness
@@ -7,10 +5,15 @@ import group_theory.quotient_group
 import data.fintype.card
 import data.set.finite
 import init.data.nat.lemmas
+import data.nat.prime
+import data.zmod.basic
+import data.complex.basic
+import analysis.special_functions.pow
+import order.filter.at_top_bot
 
 
 local attribute [semireducible] with_zero
-def disc (a b : ℚ) : ℚ :=
+def disc (a b : ℤ) : ℤ :=
 -16*(4*a^3+27*b^2)
 
 structure elliptic_curve :=
@@ -159,8 +162,6 @@ end
 def generators (E : elliptic_curve) := 
   {S : set (torsion_free E) | (set.finite S) ∧ (add_subgroup.closure S = ⊤)}
 
-
-
 def sizes (E : elliptic_curve) : (set ℕ) :=
   {n : ℕ | ∃ (S : generators E), (fintype.card (fintype S)) = n}
 
@@ -174,7 +175,7 @@ theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) := begin
   use fintype.card (fintype S),
   rw set.mem_set_of_eq,
   use S,
-  {unfold generators,
+  {simp only [elliptic_curve.generators.equations._eqn_1],
   rw set.mem_set_of_eq,
   exact ⟨hfinite, hclosure⟩},
   {refl},
@@ -183,6 +184,45 @@ open_locale classical
 noncomputable def rank (E : elliptic_curve) : ℕ :=
   nat.find (sizes_non_empty E)
   
+def good_primes := {p : ℕ | nat.prime p ∧ ¬ (↑p ∣ (disc E.a E.b))}
+
+def p_points (E : elliptic_curve) (p : good_primes E) :=
+  {P : zmod p × zmod p | let ⟨x, y⟩ := P in y^2  = x^3 + E.a*x + E.b}
+
+noncomputable def a_p (E : elliptic_curve) (p : good_primes E) : ℤ := 
+  p - fintype.card (fintype (p_points E p))
+
+def half_plane := {z : ℂ | complex.re z > 3/2}
+
+noncomputable def local_factor (E : elliptic_curve) (s : ℂ) : good_primes E → ℂ
+| p := 1 - (a_p E p) * p ^ (-s) + p ^ (1-2*s)
+
+theorem hasse_bound (E :elliptic_curve) (p : good_primes E) : abs(a_p E p) ≤ 2 * p^(1/2) := begin
+ sorry,
+end
+
+variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
+noncomputable theory
+open finset filter function classical
+open_locale topological_space classical big_operators nnreal
+
+variables [comm_monoid α] [topological_space α]
+
+def has_prod (f : β → α) (a : α) : Prop := tendsto (λs:finset β, ∏ b in s, f b) at_top (𝓝 a)
+
+def prodable (f : β → α) : Prop := ∃a, has_prod f a
+
+@[irreducible] def tprod {β} (f : β → α) := if h : prodable f then classical.some h else 1
+
+theorem converges (E : elliptic_curve) (s : half_plane) : prodable (local_factor E s) := begin
+  sorry,
+end
+
+def L_function (E : elliptic_curve) : half_plane → ℂ
+| s := tprod (local_factor E s)
+
+
+
 
 
 
