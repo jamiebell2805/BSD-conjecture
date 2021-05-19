@@ -10,6 +10,8 @@ import data.zmod.basic
 import data.complex.basic
 import analysis.special_functions.pow
 import order.filter.at_top_bot
+import analysis.analytic.basic
+import analysis.calculus.iterated_deriv
 
 
 local attribute [semireducible] with_zero
@@ -218,12 +220,28 @@ theorem converges (E : elliptic_curve) (s : half_plane) : prodable (local_factor
   sorry,
 end
 
-def L_function (E : elliptic_curve) : half_plane → ℂ
-| s := tprod (local_factor E s)
+def L_function_product (E : elliptic_curve) : half_plane → ℂ
+| s := 1/(tprod (local_factor E s))
 
+theorem analytic_continuation: ∃ f : ℂ → ℂ, (differentiable ℂ f)∧(∀ z : half_plane, f z = L_function_product E z)
+∧ (∀ g : ℂ → ℂ, (differentiable ℂ g)∧(∀ z : half_plane, g z = L_function_product E z) → g = f) := begin
+  sorry,
+end
 
+noncomputable def L_function : ℂ → ℂ := classical.some (analytic_continuation E)
 
+def L_derivative (E : elliptic_curve) : ℕ → ℂ → ℂ
+|n := iterated_deriv n (L_function E)
 
+theorem has_order_of_vanishing : ∃ n : ℕ, L_derivative E n 1 ≠ 0 := begin
+  sorry,
+end
 
+noncomputable def analytic_rank (E : elliptic_curve) : ℕ :=
+  nat.find (has_order_of_vanishing E)
+
+theorem BSD : analytic_rank E = rank E := begin
+  sorry,
+end
 
 end elliptic_curve
