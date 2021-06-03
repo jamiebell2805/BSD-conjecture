@@ -46,7 +46,6 @@ end
 
 def points (E : elliptic_curve) := with_zero E.finite_points
 
-
 instance : has_zero (points E) := with_zero.has_zero
 
 def points_mk {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b) : points E := some ⟨⟨x, y⟩, h⟩
@@ -65,25 +64,37 @@ begin
     refl }
 end
 
-  
 def is_finite (P : points E) := ∃ {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b), P = E.points_mk h
 
 lemma not_is_finite_zero : ¬ E.is_finite 0.
 
-noncomputable def x_coord {P : points E} (hP : E.is_finite P) : ℚ := 
-classical.some hP
+lemma is_finite_some (P : finite_points E) : E.is_finite (some P) :=
+begin
+  rcases P with ⟨⟨x, y⟩, h⟩,
+  use [x, y, h],
+  refl,
+end
 
-noncomputable def y_coord {P : points E} (hP : E.is_finite P) : ℚ :=
-classical.some (classical.some_spec hP)
+def x_coord : Π {P : points E}, E.is_finite P → ℚ
+| none h0 := false.elim (E.not_is_finite_zero h0) -- 0 can't happen
+| (some ⟨(x,y),h⟩) _ := x
+
+lemma x_coord_some {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b) :
+  E.x_coord (E.is_finite_some ⟨(x,y),h⟩) = x := rfl
+
+def y_coord : Π {P : points E}, E.is_finite P → ℚ
+| none h0 := false.elim (E.not_is_finite_zero h0)
+| (some ⟨(x,y),h⟩) _ := y
+
+lemma y_coord_some {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b) :
+  E.y_coord (E.is_finite_some ⟨(x,y),h⟩) = y := rfl
 
 lemma is_zero_or_finite (P : points E) :
   P = 0 ∨ E.is_finite P :=
 begin
-  cases P,
+  rcases P with (_ | ⟨⟨x, y⟩, h⟩),
   { left, refl },
-  { right,
-    rcases P with ⟨⟨x, y⟩, h⟩,
-    exact ⟨x, y, h, rfl⟩ }
+  { right, exact ⟨x, y, h, rfl⟩ }
 end
 
 def is_on_curve (x y : ℚ) := y^2 = x^3 + E.a*x + E.b
@@ -93,7 +104,10 @@ iff.rfl
 
 lemma coords_are_on_curve {P : points E} (hP : E.is_finite P) :
   E.is_on_curve (E.x_coord hP) (E.y_coord hP) :=
-classical.some (classical.some_spec (classical.some_spec hP))
+match P, hP with
+| none, h0 := false.elim (E.not_is_finite_zero h0)
+| some ⟨(x,y),h⟩, _ := h
+end
 
 lemma is_zero_or_finite' (P : points E) : P = 0 ∨ ∃ (x y : ℚ)
   (h : E.is_on_curve x y), P = E.points_mk h :=
@@ -105,8 +119,6 @@ begin
     use [x, y, h1] }
 end
 
-set_option pp.proofs true
-
 lemma is_finite_spec {P : points E} (hP : E.is_finite P) :
   P = E.points_mk (E.coords_are_on_curve hP) :=
 begin
@@ -115,8 +127,7 @@ begin
     exfalso,
     exact E.not_is_finite_zero hP },
   { rcases h with ⟨x, y, h1, rfl⟩,
-    rw ext_iff,
-    sorry }
+    refl }
 end
 
 lemma is_on_curve_neg {x y : ℚ} (h : E.is_on_curve x y) : E.is_on_curve x (-y) :=
@@ -182,8 +193,28 @@ lemma double_zero : E.double 0 = 0 := rfl
 lemma double_order_two {x : ℚ} (h : E.is_on_curve x 0) :
   E.double (E.points_mk h) = 0 := rfl
 
---lemma double_finite {x y : ℚ} (hy : y ≠ 0) (h : E.is_on_curve x y) :
---  (E.double (E.points_mk h) : ℚ × ℚ) = 
+lemma double_finite {x y : ℚ} (hy : y ≠ 0) (h : E.is_on_curve x y) :
+  E.is_finite (E.double (E.points_mk h)) := 
+begin
+  change E.is_finite (dite (y = 0) _ _),
+  rw dif_neg hy,
+  exact E.is_finite_some _,
+end
+
+lemma double_x_of_finite {x y : ℚ} (hy : y ≠ 0) (h : E.is_on_curve x y) :
+  E.x_coord (E.double_finite hy h) = ((3*x^2+E.a)^2-2*x*(2*y)^2)/(2*y)^2 :=
+begin
+  convert E.x_coord_some _,
+  exact dif_neg hy,
+end
+
+lemma double_y_of_finite {x y : ℚ} (hy : y ≠ 0) (h : E.is_on_curve x y) :
+  E.y_coord (E.double_finite hy h) = 
+(-((3*x^2+E.a)*((3*x^2+E.a)^2-2*x*(2*y)^2)+(y*(2*y)-(3*x^2+E.a)*x)*(2*y)^2))/(2*y)^3 :=
+begin
+  convert E.y_coord_some _,
+  exact dif_neg hy,
+end
 
 def add : points E → points E → points E
 | 0 P := P
@@ -222,14 +253,11 @@ instance : has_add (points E) := ⟨E.add⟩
 
 theorem zero_add (P : points E) : (0 : points E) + P = P := sorry
 theorem add_zero (P : points E) : P + 0 = P := sorry
-theorem some_add_some 
-
-#print prefix elliptic_curve.add
-#exit
+-- you can prove add_left_neg here
 
 instance : add_comm_group (points E) :=
 { zero := 0,
-  add := has_add.add,
+  add := (+),
   neg := has_neg.neg,
   zero_add := begin
     intro a,
@@ -269,10 +297,6 @@ instance : add_comm_group (points E) :=
     {refl},
     cases b,
     {refl},
-    unfold has_add.add add_semigroup.add,
-    simp only [elliptic_curve.add],
-    delta add._match_2,
-
     sorry,
   end,
 }
