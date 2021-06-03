@@ -22,12 +22,12 @@ local attribute [semireducible] with_zero
 open_locale classical
 noncomputable theory
 
-variables {k : Type} [field k][algebra ℚ k][finite_dimensional ℚ k][char_zero k]
+variables {k : Type} [field k][char_zero k][finite_dimensional ℚ k]
 
 def disc (a b : k) : k :=
 -16*(4*a^3+27*b^2)
 
-structure elliptic_curve_nf (k : Type) [field k][algebra ℚ k][finite_dimensional ℚ k][char_zero k] :=
+structure elliptic_curve_nf (k : Type) [field k][char_zero k][finite_dimensional ℚ k] :=
 (a b : k)
 (disc_nonzero : disc a b ≠ 0)
 
@@ -116,12 +116,11 @@ if hd : x1 = x2 then (if y1 = y2 then double E (some P) else 0) else
     field_simp,
     have h : (-((y1 * (x1 - x2) - (y1 - y2) * x1) * (x1 - x2) * (x1 - x2)) + -((y1 - y2) * ((y1 - y2) ^ 2 - (x1 + x2) * (x1 - x2) * (x1 - x2)))) ^ 2 * (((x1 - x2) ^ 2) ^ 3 * (x1 - x2) ^ 2) - ((x1 - x2) ^ 3) ^ 2 * (((y1 - y2) ^ 2 - (x1 + x2) * (x1 - x2) * (x1 - x2)) ^ 3 * (x1 - x2) ^ 2 + A * ((y1 - y2) ^ 2 - (x1 + x2) * (x1 - x2) * (x1 - x2)) * ((x1 - x2) ^ 2) ^ 3 + B * (((x1 - x2) ^ 2) ^ 3 * (x1 - x2) ^ 2))
     =(x1-x2)^11*((y1^2-(x1^3+A*x1+B))*(y1^2-2*y1*y2+B+3*x1*x2^2-x2^3-x1^3+A*x2)+(y2^2-(x2^3+A*x2+B))*(-y2^2+2*y1*y2-B-3*x1^2*x2+x1^3+x2^3-A*x1)),
-    ring,
-    rw h, clear h,
-    --rw h1, rw h2,
-    --ring,
-    sorry,
-  end⟩
+    { ring },
+    rw h1 at h,
+    rw h2 at h,
+    simpa using h,
+    end⟩
 
 instance : has_neg (points E) := ⟨E.neg⟩ 
 instance : has_add (points E) := ⟨E.add⟩
