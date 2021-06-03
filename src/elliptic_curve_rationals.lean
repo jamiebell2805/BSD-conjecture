@@ -26,29 +26,121 @@ structure elliptic_curve :=
 
 namespace elliptic_curve
 
+variable (E : elliptic_curve)
+
 def finite_points (E : elliptic_curve) := {P : ℚ × ℚ // let ⟨x, y⟩ := P in 
   y^2  = x^3 + E.a*x + E.b}
 
+lemma finite_points.ext_iff {x1 y1 : ℚ} (h1 : y1^2  = x1^3 + E.a*x1 + E.b)
+  {x2 y2 : ℚ} (h2 : y2^2  = x2^3 + E.a*x2 + E.b) :
+  (⟨(x1, y1), h1⟩ : E.finite_points) = ⟨(x2, y2), h2⟩ ↔ x1 = x2 ∧ y1 = y2 :=
+begin
+  split,
+  { intro h,
+    rw subtype.ext_iff at h,
+    change (x1, y1) = (x2, y2) at h,
+    exact prod.mk.inj h },
+  { rintro ⟨rfl, rfl⟩,
+    refl },
+end
+
 def points (E : elliptic_curve) := with_zero E.finite_points
 
-variable (E : elliptic_curve)
 
 instance : has_zero (points E) := with_zero.has_zero
+
+def points_mk {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b) : points E := some ⟨⟨x, y⟩, h⟩
+
+lemma ext_iff
+  {x1 y1 : ℚ} (h1 : y1^2  = x1^3 + E.a*x1 + E.b)
+  {x2 y2 : ℚ} (h2 : y2^2  = x2^3 + E.a*x2 + E.b) :
+  E.points_mk h1 = E.points_mk h2 ↔ x1 = x2 ∧ y1 = y2 :=
+begin
+  split,
+  { intro h,
+    change some _ = some _ at h,
+    rw option.some_inj at h,
+    rwa finite_points.ext_iff at h },
+  { rintro ⟨rfl, rfl⟩,
+    refl }
+end
+
+  
+def is_finite (P : points E) := ∃ {x y : ℚ} (h : y^2  = x^3 + E.a*x + E.b), P = E.points_mk h
+
+lemma not_is_finite_zero : ¬ E.is_finite 0.
+
+noncomputable def x_coord {P : points E} (hP : E.is_finite P) : ℚ := 
+classical.some hP
+
+noncomputable def y_coord {P : points E} (hP : E.is_finite P) : ℚ :=
+classical.some (classical.some_spec hP)
+
+lemma is_zero_or_finite (P : points E) :
+  P = 0 ∨ E.is_finite P :=
+begin
+  cases P,
+  { left, refl },
+  { right,
+    rcases P with ⟨⟨x, y⟩, h⟩,
+    exact ⟨x, y, h, rfl⟩ }
+end
+
+def is_on_curve (x y : ℚ) := y^2 = x^3 + E.a*x + E.b
+
+lemma is_on_curve_def {x y : ℚ} : E.is_on_curve x y ↔ y^2 = x^3 + E.a*x + E.b :=
+iff.rfl
+
+lemma coords_are_on_curve {P : points E} (hP : E.is_finite P) :
+  E.is_on_curve (E.x_coord hP) (E.y_coord hP) :=
+classical.some (classical.some_spec (classical.some_spec hP))
+
+lemma is_zero_or_finite' (P : points E) : P = 0 ∨ ∃ (x y : ℚ)
+  (h : E.is_on_curve x y), P = E.points_mk h :=
+begin
+  cases E.is_zero_or_finite P,
+  { left, assumption },
+  { right,
+    rcases h with ⟨x, y, h1, rfl⟩,
+    use [x, y, h1] }
+end
+
+set_option pp.proofs true
+
+lemma is_finite_spec {P : points E} (hP : E.is_finite P) :
+  P = E.points_mk (E.coords_are_on_curve hP) :=
+begin
+  cases E.is_zero_or_finite' P, 
+  { subst h,
+    exfalso,
+    exact E.not_is_finite_zero hP },
+  { rcases h with ⟨x, y, h1, rfl⟩,
+    rw ext_iff,
+    sorry }
+end
+
+lemma is_on_curve_neg {x y : ℚ} (h : E.is_on_curve x y) : E.is_on_curve x (-y) :=
+begin
+  rw is_on_curve_def at *,
+  convert h using 1,
+  ring,
+end
 
 def neg_finite : finite_points E → finite_points E
 | P := 
   let ⟨⟨x, y⟩, hP⟩ := P in 
-  ⟨(x, -y), begin
-    change y^2  = x^3 + E.a*x + E.b at hP,
-    change (-y)^2 = x^3 + E.a*x + E.b,
-    convert hP using 1,
-    ring,
-  end⟩
+  ⟨(x, -y), E.is_on_curve_neg hP⟩
 
 def neg : points E → points E
 | 0 := 0
 | (some P) := (some (neg_finite E P))
 
+instance : has_neg (points E) := ⟨E.neg⟩ 
+
+lemma neg_zero : -(0 : points E) = 0 := rfl
+
+lemma neg_finite_def {x y : ℚ} (h : E.is_on_curve x y) :
+  -(E.points_mk h) = E.points_mk (E.is_on_curve_neg h) := rfl 
 
 def double : points E → points E
 | 0 := 0
@@ -85,6 +177,14 @@ if h2 : y = 0 then 0 else
     simp,
   end⟩
 
+lemma double_zero : E.double 0 = 0 := rfl
+
+lemma double_order_two {x : ℚ} (h : E.is_on_curve x 0) :
+  E.double (E.points_mk h) = 0 := rfl
+
+--lemma double_finite {x y : ℚ} (hy : y ≠ 0) (h : E.is_on_curve x y) :
+--  (E.double (E.points_mk h) : ℚ × ℚ) = 
+
 def add : points E → points E → points E
 | 0 P := P
 | P 0 := P
@@ -118,8 +218,14 @@ if hd : x1 = x2 then (if y1 = y2 then double E (some P) else 0) else
     ring,
   end⟩
 
-instance : has_neg (points E) := ⟨E.neg⟩ 
 instance : has_add (points E) := ⟨E.add⟩
+
+theorem zero_add (P : points E) : (0 : points E) + P = P := sorry
+theorem add_zero (P : points E) : P + 0 = P := sorry
+theorem some_add_some 
+
+#print prefix elliptic_curve.add
+#exit
 
 instance : add_comm_group (points E) :=
 { zero := 0,
@@ -140,14 +246,20 @@ instance : add_comm_group (points E) :=
   add_assoc := begin
     sorry,
   end,
-  add_left_neg := begin
-    rintro ⟨⟨x,y⟩,h⟩,
-    {refl},
-    rcases a with ⟨⟨x, y⟩, h⟩,
-    change y^2 = _ at h,
-    have h1: -some ⟨(x, y), h⟩ = some ⟨(x, -y), h⟩,
-    sorry,
-
+  add_left_neg := begin sorry
+    -- rintro ⟨⟨x,y⟩,h⟩,
+    -- {refl},
+    -- rcases a with ⟨⟨x, y⟩, h⟩,
+    -- change y^2 = _ at h,
+    -- change (id (some (E.neg_finite _)) : points E) + _ = _,
+    -- simp, -- remove id!
+    -- change dite _ _ _ = _,
+    -- rw dif_pos rfl,
+    -- split_ifs,
+    -- { change dite _ _ _ = _,
+    --   rw dif_pos,
+    --   linarith },
+    -- { refl }
   end,
   add_comm := begin
     intros a b,
@@ -157,9 +269,9 @@ instance : add_comm_group (points E) :=
     {refl},
     cases b,
     {refl},
-    
-
-    
+    unfold has_add.add add_semigroup.add,
+    simp only [elliptic_curve.add],
+    delta add._match_2,
 
     sorry,
   end,
