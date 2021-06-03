@@ -55,6 +55,7 @@ theorem is_noetherian_torsion_free : is_noetherian ℤ (torsion_submodule E).quo
   apply points_is_noetherian,
 end
 
-theorem is_fg_torsion_free : submodule.fg (module ℤ (torsion_free E)) := begin
-
+theorem is_fg_torsion_free : submodule.fg (⊤ :submodule  ℤ (torsion_free E)) := begin
+sorry,
+end
 end elliptic_curve
