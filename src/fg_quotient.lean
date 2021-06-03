@@ -25,14 +25,8 @@ theorem fg_surj_image_fg: (function.surjective f) → (group.fg G) → (group.fg
 end
 
 @[to_additive add_quotient_surj]
-theorem quotient_surj: function.surjective (quotient_group.mk' N) := begin
-  intro a,
-  
-  
-  
-
-  sorry,
-end
+theorem quotient_surj: function.surjective (quotient_group.mk' N) := 
+quotient.surjective_quotient_mk'
 
 @[to_additive add_fg_quotient_of_fg]
 theorem fg_quotient_of_fg: (group.fg G) → (group.fg (quotient_group.quotient N)) := begin
