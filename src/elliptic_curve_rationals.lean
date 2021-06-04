@@ -153,6 +153,12 @@ lemma neg_zero : -(0 : points E) = 0 := rfl
 lemma neg_finite_def {x y : ℚ} (h : E.is_on_curve x y) :
   -(E.points_mk h) = E.points_mk (E.is_on_curve_neg h) := rfl 
 
+lemma neg_finite_def' {x y : ℚ} (h : E.is_on_curve x y) :
+  E.neg_finite ⟨(x, y), h⟩ = ⟨⟨x,-y⟩, E.is_on_curve_neg h⟩ := rfl 
+
+lemma neg_some_some_neg (P : finite_points E) :
+  -(id (some P) : E.points) = some (E.neg_finite P) := rfl
+  
 def double : points E → points E
 | 0 := 0
 | (some P) :=
@@ -251,54 +257,157 @@ if hd : x1 = x2 then (if y1 = y2 then double E (some P) else 0) else
 
 instance : has_add (points E) := ⟨E.add⟩
 
-theorem zero_add (P : points E) : (0 : points E) + P = P := sorry
-theorem add_zero (P : points E) : P + 0 = P := sorry
+theorem zero_add (P : points E) : (0 : points E) + P = P := begin
+    cases P,
+    { refl },
+    { refl },
+  end
+theorem add_zero (P : points E) : P + 0 = P := begin
+    cases P,
+    { refl },
+    { refl },
+end
+lemma add_equal (P : points E) : P + P = E.double P := begin
+  cases P,
+  {refl},
+  { rcases P with ⟨⟨x, y⟩, h⟩,
+    change dite _ _ _ = _,
+    rw dif_pos rfl,
+    split_ifs,
+    { refl },
+    { refl },
+  },
+end
+
+lemma add_left_neg_finite {x y : ℚ}(h : E.is_on_curve x y) :
+  (id (some ⟨⟨x,-y⟩, E.is_on_curve_neg h⟩):points E) + some⟨⟨x,y⟩,h⟩ = 0 := begin
+    simp,
+    change dite _ _ _ = _,
+    rw dif_pos rfl,
+    split_ifs,
+    {have hy: y=0,
+      {linarith},
+      rw hy at h,
+      convert E.double_order_two h,
+      linarith },
+    { refl },
+  end
+
+theorem add_left_neg (P : points E) : (-P) + P = 0 := begin
+    cases P,
+    { refl },
+    { change -(id(some P): points E) + some P = 0,
+      rw neg_some_some_neg,
+      rcases P with ⟨⟨x, y⟩, h⟩,
+      change E.is_on_curve x y at h,
+      rw E.neg_finite_def',
+      apply add_left_neg_finite},
+  end
+
+theorem add_comm_finite {x1 x2 y1 y2 : ℚ}(h1 : E.is_on_curve x1 y1)(h2 : E.is_on_curve x2 y2) :
+  E.points_mk h1 + E.points_mk h2 = E.points_mk h2 + E.points_mk h1 := begin
+    change dite _ _ _ = dite _ _ _,
+    split_ifs,
+    { have heq: E.points_mk h1 = E.points_mk h2,
+      { rw ext_iff,
+        exact ⟨h, h_1⟩,
+      },
+      change E.double (E.points_mk h1) = E.double (E.points_mk h2),
+      rw heq,
+    },
+    { exfalso,
+      apply h_3,
+      rw h_1,
+    },
+    { exfalso,
+      apply h_2,
+      rw h,
+    },
+    { exfalso,
+      apply h_1,
+      rw h_3,
+    },
+    { refl,
+    },
+    { exfalso,
+      apply h_2,
+      rw h,
+    },
+    { exfalso,
+      apply h,
+      rw h_1,
+    },
+    { exfalso,
+      apply h,
+      rw h_1,
+    },
+    { rw option.some_inj,
+      rw finite_points.ext_iff,
+      split,
+      { have h: x1-x2 ≠ 0,
+        { rw sub_ne_zero,
+          exact h },
+        have h: x2-x1 ≠ 0,
+        { rw sub_ne_zero,
+          exact h_1 },
+        rw ← sub_eq_zero,
+        field_simp,
+        ring,
+      },
+      { have h: x1-x2 ≠ 0,
+        { rw sub_ne_zero,
+          exact h },
+        have h: x2-x1 ≠ 0,
+        { rw sub_ne_zero,
+          exact h_1 },
+        rw ← sub_eq_zero,
+        field_simp,
+        ring,
+      },
+    },
+  end
+
+theorem add_comm (P Q : points E) : P + Q = Q + P := begin
+  cases E.is_zero_or_finite' P,
+  { rw h,
+    rw add_zero,
+    rw zero_add
+  },
+  { cases E.is_zero_or_finite' Q,
+    { rw h_1,
+      rw add_zero,
+      rw zero_add
+    },
+    { cases h with x1 h,
+      cases h with y1 hP,
+      cases hP with hP1 hP2,
+      cases h_1 with x2 h_1,
+      cases h_1 with y2 hQ,
+      cases hQ with hQ1 hQ2,
+      rw [hP2, hQ2],
+      apply E.add_comm_finite,
+    },
+  },
+end
+
 -- you can prove add_left_neg here
+
+example (x y : ℚ)(h : ¬ x = y) : x-y ≠ 0 := begin
+  rw sub_ne_zero,
+  exact h,
+end
 
 instance : add_comm_group (points E) :=
 { zero := 0,
   add := (+),
   neg := has_neg.neg,
-  zero_add := begin
-    intro a,
-    cases a,
-    { refl },
-    { refl },
-  end,
-  add_zero := begin
-    intro a,
-    cases a,
-    { refl },
-    { refl },
-  end,
+  zero_add := E.zero_add,
+  add_zero := E.add_zero,
   add_assoc := begin
     sorry,
   end,
-  add_left_neg := begin sorry
-    -- rintro ⟨⟨x,y⟩,h⟩,
-    -- {refl},
-    -- rcases a with ⟨⟨x, y⟩, h⟩,
-    -- change y^2 = _ at h,
-    -- change (id (some (E.neg_finite _)) : points E) + _ = _,
-    -- simp, -- remove id!
-    -- change dite _ _ _ = _,
-    -- rw dif_pos rfl,
-    -- split_ifs,
-    -- { change dite _ _ _ = _,
-    --   rw dif_pos,
-    --   linarith },
-    -- { refl }
-  end,
-  add_comm := begin
-    intros a b,
-    cases a,
-    cases b,
-    {refl},
-    {refl},
-    cases b,
-    {refl},
-    sorry,
-  end,
+  add_left_neg := E.add_left_neg,
+  add_comm := E.add_comm,
 }
 
 theorem fg : add_group.fg (points E) := begin
