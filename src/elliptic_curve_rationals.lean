@@ -1,15 +1,7 @@
-import tactic
-import group_theory.subgroup
-import group_theory.finiteness
-import group_theory.quotient_group
-import data.fintype.card
-import data.set.finite
-import init.data.nat
 import data.nat.prime
 import data.zmod.basic
 import data.complex.basic
 import analysis.special_functions.pow
-import order.filter.at_top_bot
 import analysis.analytic.basic
 import analysis.calculus.iterated_deriv
 import tprod
@@ -390,12 +382,6 @@ theorem add_comm (P Q : points E) : P + Q = Q + P := begin
   },
 end
 
--- you can prove add_left_neg here
-
-example (x y : ℚ)(h : ¬ x = y) : x-y ≠ 0 := begin
-  rw sub_ne_zero,
-  exact h,
-end
 
 instance : add_comm_group (points E) :=
 { zero := 0,
