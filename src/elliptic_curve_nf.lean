@@ -1,15 +1,7 @@
-import tactic
-import group_theory.subgroup
-import group_theory.finiteness
-import group_theory.quotient_group
-import data.fintype.card
-import data.set.finite
-import init.data.nat.lemmas
 import data.nat.prime
 import data.zmod.basic
 import data.complex.basic
 import analysis.special_functions.pow
-import order.filter.at_top_bot
 import analysis.analytic.basic
 import analysis.calculus.iterated_deriv
 import tprod
@@ -533,55 +525,53 @@ theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) := begin
   {refl},
 end
 open_locale classical
-noncomputable def rank (E : elliptic_curve_nf k) : ℕ :=
+noncomputable def rank : ℕ :=
   nat.find (sizes_non_empty E)
   
-def good_primes (E : elliptic_curve_nf k): (set k) :=sorry 
---{p : ℕ | nat.prime p ∧ ¬ (↑p ∣ (disc E.a E.b))}
 
--- def p_points (E : elliptic_curve_nf k) (p : good_primes E k) := sorry
---   {P : zmod p × zmod p | let ⟨x, y⟩ := P in y^2  = x^3 + E.a*x + E.b}
+def primes (k) : (set k) := sorry
 
--- noncomputable def a_p (E : elliptic_curve) (p : good_primes E) : ℤ := 
---   p - fintype.card (fintype (p_points E p))
+def good_primes (E : elliptic_curve_nf k) : (set k) := sorry
+
+def residue_characteristic (p : primes k) : ℕ := sorry
+
+def residue_field (p : primes k) : Type := sorry
+
+def p_points (p : good_primes E) : 
+  finset (residue_field p × residue_field p):= sorry
+
+noncomputable def a_p (p : good_primes E) : ℤ := 
+  residue_characteristic p - finset.card (p_points E p)
 
 def half_plane := {z : ℂ // complex.re z > 3/2}
 
 instance : has_coe half_plane ℂ := ⟨subtype.val⟩
 
--- noncomputable def local_factor (E : elliptic_curve) (s : ℂ) : good_primes E → ℂ
--- | p := 1 - (a_p E p) * p ^ (-s) + p ^ (1-2*s)
+noncomputable def local_factor (s : ℂ) : good_primes E → ℂ
+| p := 1 - (a_p E p) * (residue_characteristic p) ^ (-s) + (residue_characteristic p) ^ (1-2*s)
 
--- theorem hasse_bound (E :elliptic_curve) (p : good_primes E) : abs(a_p E p) ≤ 2 * p^(1/2) := begin
---  sorry,
--- end
+theorem hasse_bound (p : good_primes E) : 
+  abs(a_p E p) ≤ 2 * (residue_characteristic p)^(1/2) := sorry
 
--- theorem converges (E : elliptic_curve) (s : half_plane) : prodable (local_factor E s) := begin
---   sorry,
--- end
+theorem converges (s : half_plane) : 
+  prodable (local_factor E s) := sorry
 
--- noncomputable def L_function_product (E : elliptic_curve) (s : half_plane) : ℂ :=
--- 1/(tprod (local_factor E s))
+noncomputable def L_function_product  (s : half_plane) : ℂ :=
+1/(tprod (local_factor E s))
 
--- theorem analytic_continuation: ∃ f : ℂ → ℂ, (differentiable ℂ f)∧(∀ z : half_plane, f z = L_function_product E z)
--- ∧ (∀ g : ℂ → ℂ, (differentiable ℂ g)∧(∀ z : half_plane, g z = L_function_product E z) → g = f) := begin
---   sorry,
--- end
+theorem analytic_continuation: ∃ f : ℂ → ℂ, (differentiable ℂ f)∧(∀ z : half_plane, f z = L_function_product E z)
+∧ (∀ g : ℂ → ℂ, (differentiable ℂ g)∧(∀ z : half_plane, g z = L_function_product E z) → g = f) := sorry
 
--- noncomputable def L_function : ℂ → ℂ := classical.some (analytic_continuation E)
+noncomputable def L_function : ℂ → ℂ := classical.some (analytic_continuation E)
 
--- noncomputable def L_derivative (E : elliptic_curve) : ℕ → ℂ → ℂ
--- |n := iterated_deriv n (L_function E)
+noncomputable def L_derivative (E : elliptic_curve_nf k) : ℕ → ℂ → ℂ
+|n := iterated_deriv n (L_function E)
 
--- theorem has_order_of_vanishing : ∃ n : ℕ, L_derivative E n 1 ≠ 0 := begin
---   sorry,
--- end
+theorem has_order_of_vanishing : ∃ n : ℕ, L_derivative E n 1 ≠ 0 := sorry
 
--- noncomputable def analytic_rank (E : elliptic_curve) : ℕ :=
---   nat.find (has_order_of_vanishing E)
+noncomputable def analytic_rank (E : elliptic_curve_nf k) : ℕ :=
+  nat.find (has_order_of_vanishing E)
 
--- theorem BSD : analytic_rank E = rank E := begin
---   sorry,
--- end
+theorem BSD : analytic_rank E = rank E := sorry
 
 end elliptic_curve_nf
