@@ -9,7 +9,8 @@ variables (G H: Type*)[group G][group H](N : subgroup G)[subgroup.normal N](f : 
 variables (A : Type*)[add_comm_group A](B : add_subgroup A)
 
 @[to_additive add_fg_surj_image_fg]
-theorem fg_surj_image_fg: (function.surjective f) → (group.fg G) → (group.fg H):= begin
+theorem fg_surj_image_fg: (function.surjective f)
+   → (group.fg G) → (group.fg H):= begin
   intros hsurj hfg,
   rw group.fg_iff at *,
   rcases hfg with ⟨S, ⟨hSclosure, hSfinite⟩⟩,
@@ -25,11 +26,13 @@ theorem fg_surj_image_fg: (function.surjective f) → (group.fg G) → (group.fg
 end
 
 @[to_additive add_quotient_surj]
-theorem quotient_surj: function.surjective (quotient_group.mk' N) := 
+theorem quotient_surj: 
+function.surjective (quotient_group.mk' N) := 
 quotient.surjective_quotient_mk'
 
 @[to_additive add_fg_quotient_of_fg]
-theorem fg_quotient_of_fg: (group.fg G) → (group.fg (quotient_group.quotient N)) := begin
+theorem fg_quotient_of_fg: (group.fg G)
+   → (group.fg (quotient_group.quotient N)) := begin
   apply fg_surj_image_fg G (quotient_group.quotient N) (quotient_group.mk' N),
   apply quotient_surj,
 end

@@ -275,7 +275,7 @@ theorem add_zero (P : points E) : P + 0 = P := begin
     { refl },
     { refl },
 end
-lemma add_equal (P : points E) : P + P = E.double P := begin
+lemma add_self (P : points E) : P + P = E.double P := begin
   cases P,
   {refl},
   { rcases P with ⟨⟨x, y⟩, h⟩,
@@ -442,7 +442,8 @@ theorem fg : add_group.fg (points E) := begin
   sorry,
 end
 
-def torsion_points (E : elliptic_curve_nf k) : (set (points E)) := 
+def torsion_points (E : elliptic_curve_nf k) : 
+(set (points E)) := 
 {P | ∃ (n : ℤ), (n • P = 0)∧(n ≠ 0)}
 
 def torsion_subgroup (E : elliptic_curve_nf k) : add_subgroup (points E) :=
@@ -529,13 +530,13 @@ noncomputable def rank : ℕ :=
   nat.find (sizes_non_empty E)
   
 
-def primes (k) : (set k) := sorry
+def primes : Type := sorry
 
-def good_primes (E : elliptic_curve_nf k) : (set k) := sorry
+def good_primes (E : elliptic_curve_nf k) : Type := sorry
 
-def residue_characteristic (p : primes k) : ℕ := sorry
+def residue_characteristic (p : primes) : ℕ := sorry
 
-def residue_field (p : primes k) : Type := sorry
+def residue_field (p : primes) : Type := sorry
 
 def p_points (p : good_primes E) : 
   finset (residue_field p × residue_field p):= sorry

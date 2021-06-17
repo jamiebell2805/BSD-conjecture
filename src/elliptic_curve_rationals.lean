@@ -20,7 +20,8 @@ namespace elliptic_curve
 
 variable (E : elliptic_curve)
 
-def finite_points (E : elliptic_curve) := {P : ℚ × ℚ // let ⟨x, y⟩ := P in 
+def finite_points (E : elliptic_curve) := 
+{P : ℚ × ℚ // let ⟨x, y⟩ := P in 
   y^2  = x^3 + E.a*x + E.b}
 
 lemma finite_points.ext_iff {x1 y1 : ℚ} (h1 : y1^2  = x1^3 + E.a*x1 + E.b)
@@ -36,7 +37,8 @@ begin
     refl },
 end
 
-def points (E : elliptic_curve) := with_zero E.finite_points
+def points (E : elliptic_curve) := 
+with_zero E.finite_points
 
 instance : has_zero (points E) := with_zero.has_zero
 
@@ -122,7 +124,8 @@ begin
     refl }
 end
 
-lemma is_on_curve_neg {x y : ℚ} (h : E.is_on_curve x y) : E.is_on_curve x (-y) :=
+lemma is_on_curve_neg {x y : ℚ} 
+(h : E.is_on_curve x y) : E.is_on_curve x (-y) :=
 begin
   rw is_on_curve_def at *,
   convert h using 1,
@@ -220,7 +223,8 @@ def add : points E → points E → points E
 | (some P) (some Q) :=
 let ⟨⟨x1, y1⟩, h1⟩ := P in
 let ⟨⟨x2, y2⟩, h2⟩ := Q in
-if hd : x1 = x2 then (if y1 = y2 then double E (some P) else 0) else 
+if hd : x1 = x2 then 
+(if y1 = y2 then double E (some P) else 0) else 
   let A : ℚ := E.a in
   let B : ℚ := E.b in
   let d := (x1 - x2) in
@@ -259,7 +263,7 @@ theorem add_zero (P : points E) : P + 0 = P := begin
     { refl },
     { refl },
 end
-lemma add_equal (P : points E) : P + P = E.double P := begin
+lemma add_self (P : points E) : P + P = E.double P := begin
   cases P,
   {refl},
   { rcases P with ⟨⟨x, y⟩, h⟩,
@@ -285,7 +289,8 @@ lemma add_left_neg_finite {x y : ℚ}(h : E.is_on_curve x y) :
     { refl },
   end
 
-theorem add_left_neg (P : points E) : (-P) + P = 0 := begin
+theorem add_left_neg (P : points E) : 
+(-P) + P = 0 := begin
     cases P,
     { refl },
     { change -(id(some P): points E) + some P = 0,
@@ -296,8 +301,11 @@ theorem add_left_neg (P : points E) : (-P) + P = 0 := begin
       apply add_left_neg_finite},
   end
 
-theorem add_comm_finite {x1 x2 y1 y2 : ℚ}(h1 : E.is_on_curve x1 y1)(h2 : E.is_on_curve x2 y2) :
-  E.points_mk h1 + E.points_mk h2 = E.points_mk h2 + E.points_mk h1 := begin
+theorem add_comm_finite {x1 x2 y1 y2 : ℚ}
+  (h1 : E.is_on_curve x1 y1)
+  (h2 : E.is_on_curve x2 y2) :
+  E.points_mk h1 + E.points_mk h2 = 
+  E.points_mk h2 + E.points_mk h1 := begin
     change dite _ _ _ = dite _ _ _,
     split_ifs,
     { have heq: E.points_mk h1 = E.points_mk h2,
@@ -359,7 +367,8 @@ theorem add_comm_finite {x1 x2 y1 y2 : ℚ}(h1 : E.is_on_curve x1 y1)(h2 : E.is_
     },
   end
 
-theorem add_comm (P Q : points E) : P + Q = Q + P := begin
+theorem add_comm (P Q : points E) :
+  P + Q = Q + P := begin
   cases E.is_zero_or_finite' P,
   { rw h,
     rw add_zero,
@@ -400,7 +409,8 @@ theorem fg : add_group.fg (points E) := begin
   sorry,
 end
 
-def torsion_points (E : elliptic_curve) : (set (points E)) := 
+def torsion_points (E : elliptic_curve) : 
+(set (points E)) := 
 {P | ∃ (n : ℤ), (n • P = 0)∧(n ≠ 0)}
 
 def torsion_subgroup (E : elliptic_curve) : add_subgroup (points E) :=
@@ -462,12 +472,15 @@ theorem torsion_free_fg : add_group.fg (torsion_free E) := begin
 end
 
 def generators (E : elliptic_curve) := 
-  {S : set (torsion_free E) | (set.finite S) ∧ (add_subgroup.closure S = ⊤)}
+  {S : set (torsion_free E) | 
+  (set.finite S) ∧ (add_subgroup.closure S = ⊤)}
 
 def sizes (E : elliptic_curve) : (set ℕ) :=
-  {n : ℕ | ∃ (S : generators E), (fintype.card (fintype S)) = n}
+  {n : ℕ | ∃ (S : generators E), 
+  (fintype.card (fintype S)) = n}
 
-theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) := begin
+theorem sizes_non_empty : ∃ (n : ℕ), (n ∈ sizes E) 
+  := begin
   unfold sizes,
   have h : ∃ (S : set (torsion_free E)), (add_subgroup.closure S = ⊤) ∧ (S.finite),
   {rw ← add_group.fg_iff,
@@ -486,48 +499,62 @@ open_locale classical
 noncomputable def rank (E : elliptic_curve) : ℕ :=
   nat.find (sizes_non_empty E)
   
-def good_primes := {p : ℕ | nat.prime p ∧ ¬ (↑p ∣ (disc E.a E.b))}
+def good_primes := {p : ℕ | nat.prime p ∧ 
+  ¬ (↑p ∣ (disc E.a E.b))}
 
-def p_points (E : elliptic_curve) (p : good_primes E) :=
-  {P : zmod p × zmod p | let ⟨x, y⟩ := P in y^2  = x^3 + E.a*x + E.b}
+def p_points (E : elliptic_curve) (p : good_primes E)
+ := {P : zmod p × zmod p | let ⟨x, y⟩ := P in 
+ y^2  = x^3 + E.a*x + E.b}
 
-noncomputable def a_p (E : elliptic_curve) (p : good_primes E) : ℤ := 
+noncomputable def a_p (E : elliptic_curve) 
+  (p : good_primes E) : ℤ := 
   p - fintype.card (fintype (p_points E p))
 
 def half_plane := {z : ℂ // complex.re z > 3/2}
 
 instance : has_coe half_plane ℂ := ⟨subtype.val⟩
 
-noncomputable def local_factor (E : elliptic_curve) (s : ℂ) : good_primes E → ℂ
+noncomputable def local_factor (E : elliptic_curve) 
+(s : ℂ) : good_primes E → ℂ
 | p := 1 - (a_p E p) * p ^ (-s) + p ^ (1-2*s)
 
-theorem hasse_bound (E :elliptic_curve) (p : good_primes E) : abs(a_p E p) ≤ 2 * p^(1/2) := begin
+theorem hasse_bound (E :elliptic_curve) 
+(p : good_primes E) : abs(a_p E p) ≤ 2 * p^(1/2) := begin
  sorry,
 end
 
-theorem converges (E : elliptic_curve) (s : half_plane) : prodable (local_factor E s) := begin
+theorem converges (E : elliptic_curve) 
+(s : half_plane) : prodable (local_factor E s) := begin
   sorry,
 end
 
-noncomputable def L_function_product (E : elliptic_curve) (s : half_plane) : ℂ :=
+noncomputable def L_function_product 
+(E : elliptic_curve) (s : half_plane) : ℂ :=
 1/(tprod (local_factor E s))
 
-theorem analytic_continuation: ∃ f : ℂ → ℂ, (differentiable ℂ f)∧(∀ z : half_plane, f z = L_function_product E z)
-∧ (∀ g : ℂ → ℂ, (differentiable ℂ g)∧(∀ z : half_plane, g z = L_function_product E z) → g = f) := begin
+theorem analytic_continuation: ∃ f : ℂ → ℂ, 
+  (differentiable ℂ f)∧(∀ z : half_plane, 
+  f z = L_function_product E z)
+  ∧ (∀ g : ℂ → ℂ, (differentiable ℂ g)∧
+  (∀ z : half_plane, g z = L_function_product E z)
+  → g = f) := begin
   sorry,
 end
 
-noncomputable def L_function : ℂ → ℂ := classical.some (analytic_continuation E)
+noncomputable def L_function : ℂ → ℂ := 
+  classical.some (analytic_continuation E)
 
-noncomputable def L_derivative (E : elliptic_curve) : ℕ → ℂ → ℂ
+noncomputable def L_derivative (E : elliptic_curve) :
+  ℕ → ℂ → ℂ
 |n := iterated_deriv n (L_function E)
 
-theorem has_order_of_vanishing : ∃ n : ℕ, L_derivative E n 1 ≠ 0 := begin
+theorem has_order_of_vanishing : ∃ n : ℕ, 
+  L_derivative E n 1 ≠ 0 := begin
   sorry,
 end
 
-noncomputable def analytic_rank (E : elliptic_curve) : ℕ :=
-  nat.find (has_order_of_vanishing E)
+noncomputable def analytic_rank (E : elliptic_curve) : 
+  ℕ := nat.find (has_order_of_vanishing E)
 
 theorem BSD : analytic_rank E = rank E := begin
   sorry,
