@@ -21,4 +21,4 @@ If you have Lean 3 installed, you can get this code by opening a command line, n
     leanproject get jamiebell2805/BSD-conjecture
     code BSD-conjecture
 
-If you do not have Lean installed, instructions to do so are aavailable at the [leanprover community](https://leanprover-community.github.io/get_started.html)
+If you do not have Lean installed, instructions to do so are available at the [leanprover community](https://leanprover-community.github.io/get_started.html)
