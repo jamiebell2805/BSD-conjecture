@@ -32,15 +32,6 @@ namespace E -- our example of an elliptic curve.
   This is an implementation issue, so we teach it to the simplifier. -/
 @[simp] lemma b : E.b = 0 := rfl
 
--- I think this is an incorrect statement of the Hasse bound because 1/2=0 :P
-/-
-theorem hasse_bound (E :elliptic_curve) 
-(p : good_primes E) : abs(a_p E p) ≤ 2 * p^(1/2) := begin
---(p : good_primes E) : (abs(a_p E p) : ℝ) ≤ 2 * p^(1/2) := begin
- sorry,
-end
--/
-
 theorem five_is_good : 5 ∈ E.good_primes :=
 begin
 --  delta E,
