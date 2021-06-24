@@ -519,8 +519,8 @@ noncomputable def local_factor (E : elliptic_curve)
 | p := 1 - (a_p E p) * p ^ (-s) + p ^ (1-2*s)
 
 
-theorem hasse_bound (E :elliptic_curve) 
-(p : good_primes E) : (a_p E p)^2 ≤ 4 * p := begin
+theorem hasse_bound (E :elliptic_curve)  (p : good_primes E) :
+  (a_p E p)^2 ≤ 4 * p := begin
  sorry,
 end
 
