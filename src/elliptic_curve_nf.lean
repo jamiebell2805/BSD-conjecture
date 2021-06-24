@@ -552,7 +552,7 @@ noncomputable def local_factor (s : ℂ) : good_primes E → ℂ
 | p := 1 - (a_p E p) * (residue_characteristic p) ^ (-s) + (residue_characteristic p) ^ (1-2*s)
 
 theorem hasse_bound (p : good_primes E) : 
-  (abs(a_p E p) : ℝ) ≤ 2 * (residue_characteristic p)^(1/2) := sorry
+  (a_p E p)^2 ≤ 4 * (residue_characteristic p) := sorry
 
 theorem converges (s : half_plane) : 
   prodable (local_factor E s) := sorry
